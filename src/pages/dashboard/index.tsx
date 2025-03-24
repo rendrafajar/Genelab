@@ -21,7 +21,7 @@ const DashboardPage = (props: DashboardPageProps) => {
     props.userName || "Admin Sekolah",
   );
   const [schoolName, setSchoolName] = useState<string>(
-    props.schoolName || "SMK Negeri 1",
+    props.schoolName || "SMK Negeri 6 Surabaya",
   );
 
   // Get user data from localStorage on component mount
