@@ -69,6 +69,7 @@ const timeSlots = [
   "14:30 - 15:15",
 ];
 
+// Memoized to prevent regeneration on every render
 const generateMockData = (): ScheduleItem[] => {
   const mockData: ScheduleItem[] = [];
   const subjects = [
@@ -157,7 +158,7 @@ const generateMockData = (): ScheduleItem[] => {
 };
 
 const ScheduleTable: React.FC<ScheduleTableProps> = ({
-  scheduleData = generateMockData(),
+  scheduleData = React.useMemo(() => generateMockData(), []),
   viewType = "class",
   onSaveChanges = () => {},
   onDeleteItem = () => {},

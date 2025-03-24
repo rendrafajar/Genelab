@@ -185,6 +185,7 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
                                 form.setValue(
                                   "availabilityConstraints",
                                   currentConstraints,
+                                  { shouldDirty: true, shouldTouch: true },
                                 );
                               }}
                             />

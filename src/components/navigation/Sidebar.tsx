@@ -27,7 +27,12 @@ interface SidebarProps {
   onLogout?: () => void;
 }
 
-const Sidebar = ({ userRole = "admin", onLogout = () => {} }: SidebarProps) => {
+const Sidebar = ({
+  userRole = "admin",
+  onLogout = () => {
+    window.location.href = "/";
+  },
+}: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
