@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, Home, School, User, Users } from "lucide-react";
 
 interface ScheduleTabsProps {
@@ -46,7 +46,7 @@ const ScheduleTabs = ({
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-sm">
-      <Tabs defaultValue={activeTab} onValueChange={onTabChange}>
+      <Tabs value={activeTab} onValueChange={onTabChange}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
             Tampilan Jadwal
@@ -64,20 +64,6 @@ const ScheduleTabs = ({
             ))}
           </TabsList>
         </div>
-
-        {tabs.map((tab) => (
-          <TabsContent
-            key={tab.id}
-            value={tab.id}
-            className="p-2 border rounded-lg"
-          >
-            <div className="flex items-center justify-center h-16 bg-gray-50 rounded-md">
-              <p className="text-gray-500">
-                Konten jadwal {tab.label} akan ditampilkan di sini
-              </p>
-            </div>
-          </TabsContent>
-        ))}
       </Tabs>
     </div>
   );

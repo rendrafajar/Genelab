@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   classId: z.string({
@@ -65,9 +66,12 @@ const ClassConstraints = ({
   ],
   onSave = () => {},
 }: ClassConstraintsProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      classId: "",
       maxDailyHours: "8",
       preferredStartTime: "07:00",
       avoidConsecutiveSubjects: false,
@@ -78,9 +82,24 @@ const ClassConstraints = ({
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    onSave(data);
-    // Dalam implementasi nyata, di sini akan ada kode untuk menyimpan data ke backend
-    console.log("Form data submitted:", data);
+    setIsSubmitting(true);
+    try {
+      onSave(data);
+      console.log("Form data submitted:", data);
+      toast({
+        title: "Batasan berhasil disimpan",
+        description: "Batasan kelas telah berhasil disimpan",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Gagal menyimpan batasan",
+        description: "Terjadi kesalahan saat menyimpan batasan kelas",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const daysOfWeek = [
@@ -265,13 +284,16 @@ const ClassConstraints = ({
                                 <Checkbox
                                   checked={field.value?.includes(day.id)}
                                   onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, day.id])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== day.id,
-                                          ),
+                                    const newValue = checked
+                                      ? [...field.value, day.id]
+                                      : field.value?.filter(
+                                          (value) => value !== day.id,
                                         );
+                                    form.setValue("avoidDays", newValue, {
+                                      shouldValidate: true,
+                                      shouldDirty: true,
+                                      shouldTouch: true,
+                                    });
                                   }}
                                 />
                               </FormControl>
@@ -314,13 +336,16 @@ const ClassConstraints = ({
                                 <Checkbox
                                   checked={field.value?.includes(day.id)}
                                   onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, day.id])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== day.id,
-                                          ),
+                                    const newValue = checked
+                                      ? [...field.value, day.id]
+                                      : field.value?.filter(
+                                          (value) => value !== day.id,
                                         );
+                                    form.setValue("preferredDays", newValue, {
+                                      shouldValidate: true,
+                                      shouldDirty: true,
+                                      shouldTouch: true,
+                                    });
                                   }}
                                 />
                               </FormControl>
@@ -343,12 +368,13 @@ const ClassConstraints = ({
                 type="button"
                 variant="outline"
                 onClick={() => form.reset()}
+                disabled={isSubmitting}
               >
                 Reset
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                Simpan Batasan
+                {isSubmitting ? "Menyimpan..." : "Simpan Batasan"}
               </Button>
             </div>
           </form>

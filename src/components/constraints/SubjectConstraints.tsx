@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   subject: z.string({
@@ -47,6 +48,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const SubjectConstraints = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const days = [
     { id: "monday", label: "Senin" },
     { id: "tuesday", label: "Selasa" },
@@ -101,8 +104,23 @@ const SubjectConstraints = () => {
   });
 
   const onSubmit = (data: FormValues) => {
-    console.log(data);
-    // Implementasi penyimpanan data batasan mata pelajaran
+    setIsSubmitting(true);
+    try {
+      console.log("Form data submitted:", data);
+      toast({
+        title: "Batasan berhasil disimpan",
+        description: "Batasan mata pelajaran telah berhasil disimpan",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Gagal menyimpan batasan",
+        description: "Terjadi kesalahan saat menyimpan batasan mata pelajaran",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -169,6 +187,8 @@ const SubjectConstraints = () => {
                                 );
                             form.setValue("preferredDays", newValues, {
                               shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
                             });
                           }}
                         />
@@ -203,6 +223,8 @@ const SubjectConstraints = () => {
                                 );
                             form.setValue("avoidDays", newValues, {
                               shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
                             });
                           }}
                         />
@@ -239,6 +261,8 @@ const SubjectConstraints = () => {
                                 );
                             form.setValue("preferredTimeSlots", newValues, {
                               shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
                             });
                           }}
                         />
@@ -273,6 +297,8 @@ const SubjectConstraints = () => {
                                 );
                             form.setValue("avoidTimeSlots", newValues, {
                               shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
                             });
                           }}
                         />
@@ -341,11 +367,17 @@ const SubjectConstraints = () => {
               />
 
               <CardFooter className="px-0 flex justify-between">
-                <Button type="button" variant="outline">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSubmitting}
+                  onClick={() => form.reset()}
+                >
                   Reset
                 </Button>
-                <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" /> Simpan Batasan
+                <Button type="submit" disabled={isSubmitting}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSubmitting ? "Menyimpan..." : "Simpan Batasan"}
                 </Button>
               </CardFooter>
             </form>

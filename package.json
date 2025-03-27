@@ -48,7 +48,10 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.1.5",
     "framer-motion": "^11.18.2",
+    "jspdf": "^3.0.1",
     "lucide-react": "^0.394.0",
+    "pg": "^8.14.1",
+    "pg-pool": "^3.8.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",
@@ -62,6 +65,7 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {

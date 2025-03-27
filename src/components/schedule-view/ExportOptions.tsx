@@ -29,11 +29,30 @@ interface ExportOptionsProps {
 }
 
 const ExportOptions = ({
-  onExportPDF = () => console.log("Export to PDF"),
-  onExportExcel = () => console.log("Export to Excel"),
-  onPrint = () => console.log("Print schedule"),
+  onExportPDF = () => {},
+  onExportExcel = () => {},
+  onPrint = () => {},
   disabled = false,
 }: ExportOptionsProps) => {
+  const handleExportPDF = () => {
+    console.log("Exporting to PDF...");
+    // Implement actual PDF export functionality
+    window.print(); // Temporary solution
+    onExportPDF();
+  };
+
+  const handleExportExcel = () => {
+    console.log("Exporting to Excel...");
+    // Implement actual Excel export functionality
+    onExportExcel();
+  };
+
+  const handlePrint = () => {
+    console.log("Printing schedule...");
+    window.print();
+    onPrint();
+  };
+
   return (
     <div className="w-full bg-white p-4 rounded-md shadow-sm border border-gray-200">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -51,7 +70,7 @@ const ExportOptions = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onPrint}
+                  onClick={handlePrint}
                   disabled={disabled}
                   className="flex items-center gap-2"
                 >
@@ -71,7 +90,7 @@ const ExportOptions = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onExportPDF}
+                  onClick={handleExportPDF}
                   disabled={disabled}
                   className="flex items-center gap-2"
                 >
@@ -91,7 +110,7 @@ const ExportOptions = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onExportExcel}
+                  onClick={handleExportExcel}
                   disabled={disabled}
                   className="flex items-center gap-2"
                 >
@@ -119,16 +138,16 @@ const ExportOptions = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onExportPDF}>
+              <DropdownMenuItem onClick={handleExportPDF}>
                 <FileText className="h-4 w-4 mr-2" />
                 <span>Ekspor ke PDF</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onExportExcel}>
+              <DropdownMenuItem onClick={handleExportExcel}>
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
                 <span>Ekspor ke Excel</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onPrint}>
+              <DropdownMenuItem onClick={handlePrint}>
                 <Printer className="h-4 w-4 mr-2" />
                 <span>Cetak Jadwal</span>
               </DropdownMenuItem>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   teacherId: z.string({
@@ -79,6 +80,8 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
   ],
   onSave = () => {},
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -95,8 +98,24 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    onSave(data);
-    console.log("Form data submitted:", data);
+    setIsSubmitting(true);
+    try {
+      onSave(data);
+      console.log("Form data submitted:", data);
+      toast({
+        title: "Batasan berhasil disimpan",
+        description: "Batasan guru telah berhasil disimpan",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Gagal menyimpan batasan",
+        description: "Terjadi kesalahan saat menyimpan batasan guru",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -185,7 +204,11 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
                                 form.setValue(
                                   "availabilityConstraints",
                                   currentConstraints,
-                                  { shouldDirty: true, shouldTouch: true },
+                                  {
+                                    shouldDirty: true,
+                                    shouldTouch: true,
+                                    shouldValidate: true,
+                                  },
                                 );
                               }}
                             />
@@ -228,16 +251,26 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
                             const currentPreferredDays =
                               form.getValues().preferredDays || [];
                             if (checked) {
-                              form.setValue("preferredDays", [
-                                ...currentPreferredDays,
-                                day.id,
-                              ]);
+                              form.setValue(
+                                "preferredDays",
+                                [...currentPreferredDays, day.id],
+                                {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                },
+                              );
                             } else {
                               form.setValue(
                                 "preferredDays",
                                 currentPreferredDays.filter(
                                   (id) => id !== day.id,
                                 ),
+                                {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                },
                               );
                             }
                           }}
@@ -270,16 +303,26 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
                             const currentPreferredSlots =
                               form.getValues().preferredTimeSlots || [];
                             if (checked) {
-                              form.setValue("preferredTimeSlots", [
-                                ...currentPreferredSlots,
-                                slot.id,
-                              ]);
+                              form.setValue(
+                                "preferredTimeSlots",
+                                [...currentPreferredSlots, slot.id],
+                                {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                },
+                              );
                             } else {
                               form.setValue(
                                 "preferredTimeSlots",
                                 currentPreferredSlots.filter(
                                   (id) => id !== slot.id,
                                 ),
+                                {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                },
                               );
                             }
                           }}
@@ -377,11 +420,13 @@ const TeacherConstraints: React.FC<TeacherConstraintsProps> = ({
               type="button"
               variant="outline"
               onClick={() => form.reset()}
+              disabled={isSubmitting}
             >
               Reset
             </Button>
-            <Button type="submit">
-              <Save className="mr-2 h-4 w-4" /> Simpan Batasan
+            <Button type="submit" disabled={isSubmitting}>
+              <Save className="mr-2 h-4 w-4" />
+              {isSubmitting ? "Menyimpan..." : "Simpan Batasan"}
             </Button>
           </div>
         </form>
