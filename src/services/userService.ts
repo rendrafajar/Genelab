@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import pool from "@/lib/database";
 
 export interface User {
   id: string;
@@ -13,101 +13,87 @@ export interface User {
 
 export const userService = {
   async getUsers(): Promise<User[]> {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .order("name");
-
-    if (error) {
+    try {
+      const result = await pool.query("SELECT * FROM users ORDER BY name");
+      return result.rows;
+    } catch (error) {
       console.error("Error fetching users:", error);
       throw error;
     }
-
-    return data || [];
   },
 
   async getUserById(id: string): Promise<User | null> {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
+    try {
+      const result = await pool.query("SELECT * FROM users WHERE id = $1", [
+        id,
+      ]);
+      return result.rows[0] || null;
+    } catch (error) {
       console.error(`Error fetching user with id ${id}:`, error);
       throw error;
     }
-
-    return data;
   },
 
   async createUser(user: Omit<User, "id">): Promise<User> {
-    const { data, error } = await supabase
-      .from("users")
-      .insert([user])
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const { name, email, role, status } = user;
+      const result = await pool.query(
+        "INSERT INTO users (name, email, role, status) VALUES ($1, $2, $3, $4) RETURNING *",
+        [name, email, role, status],
+      );
+      return result.rows[0];
+    } catch (error) {
       console.error("Error creating user:", error);
       throw error;
     }
-
-    return data;
   },
 
   async updateUser(id: string, user: Partial<User>): Promise<User> {
-    const { data, error } = await supabase
-      .from("users")
-      .update(user)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const { name, email, role, status, last_login } = user;
+      const result = await pool.query(
+        "UPDATE users SET name = COALESCE($1, name), email = COALESCE($2, email), role = COALESCE($3, role), status = COALESCE($4, status), last_login = COALESCE($5, last_login), updated_at = NOW() WHERE id = $6 RETURNING *",
+        [name, email, role, status, last_login, id],
+      );
+      return result.rows[0];
+    } catch (error) {
       console.error(`Error updating user with id ${id}:`, error);
       throw error;
     }
-
-    return data;
   },
 
   async deleteUser(id: string): Promise<void> {
-    const { error } = await supabase.from("users").delete().eq("id", id);
-
-    if (error) {
+    try {
+      await pool.query("DELETE FROM users WHERE id = $1", [id]);
+    } catch (error) {
       console.error(`Error deleting user with id ${id}:`, error);
       throw error;
     }
   },
 
   async getUsersByRole(role: "admin" | "user" | "viewer"): Promise<User[]> {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("role", role)
-      .order("name");
-
-    if (error) {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM users WHERE role = $1 ORDER BY name",
+        [role],
+      );
+      return result.rows;
+    } catch (error) {
       console.error(`Error fetching users with role ${role}:`, error);
       throw error;
     }
-
-    return data || [];
   },
 
   async getActiveUsers(): Promise<User[]> {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("status", "active")
-      .order("name");
-
-    if (error) {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM users WHERE status = $1 ORDER BY name",
+        ["active"],
+      );
+      return result.rows;
+    } catch (error) {
       console.error("Error fetching active users:", error);
       throw error;
     }
-
-    return data || [];
   },
 };
