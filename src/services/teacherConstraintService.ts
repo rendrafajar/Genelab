@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import pool from "@/lib/database";
 
 export interface TeacherConstraint {
   id: string;
@@ -13,79 +13,72 @@ export interface TeacherConstraint {
 
 export const teacherConstraintService = {
   async getTeacherConstraints(teacherId: string): Promise<TeacherConstraint[]> {
-    const { data, error } = await supabase
-      .from("teacher_constraints")
-      .select("*")
-      .eq("teacher_id", teacherId)
-      .order("day")
-      .order("start_time");
-
-    if (error) {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM teacher_constraints WHERE teacher_id = $1 ORDER BY day, start_time",
+        [teacherId],
+      );
+      return result.rows;
+    } catch (error) {
       console.error(
         `Error fetching constraints for teacher ${teacherId}:`,
         error,
       );
       throw error;
     }
-
-    return data || [];
   },
 
   async createTeacherConstraint(
     constraint: Omit<TeacherConstraint, "id">,
   ): Promise<TeacherConstraint> {
-    const { data, error } = await supabase
-      .from("teacher_constraints")
-      .insert([constraint])
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const { teacher_id, day, start_time, end_time, is_available } =
+        constraint;
+      const result = await pool.query(
+        "INSERT INTO teacher_constraints (teacher_id, day, start_time, end_time, is_available) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        [teacher_id, day, start_time, end_time, is_available],
+      );
+      return result.rows[0];
+    } catch (error) {
       console.error("Error creating teacher constraint:", error);
       throw error;
     }
-
-    return data;
   },
 
   async updateTeacherConstraint(
     id: string,
     constraint: Partial<TeacherConstraint>,
   ): Promise<TeacherConstraint> {
-    const { data, error } = await supabase
-      .from("teacher_constraints")
-      .update(constraint)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
+    try {
+      const { teacher_id, day, start_time, end_time, is_available } =
+        constraint;
+      const result = await pool.query(
+        "UPDATE teacher_constraints SET teacher_id = COALESCE($1, teacher_id), day = COALESCE($2, day), start_time = COALESCE($3, start_time), end_time = COALESCE($4, end_time), is_available = COALESCE($5, is_available), updated_at = NOW() WHERE id = $6 RETURNING *",
+        [teacher_id, day, start_time, end_time, is_available, id],
+      );
+      return result.rows[0];
+    } catch (error) {
       console.error(`Error updating teacher constraint with id ${id}:`, error);
       throw error;
     }
-
-    return data;
   },
 
   async deleteTeacherConstraint(id: string): Promise<void> {
-    const { error } = await supabase
-      .from("teacher_constraints")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
+    try {
+      await pool.query("DELETE FROM teacher_constraints WHERE id = $1", [id]);
+    } catch (error) {
       console.error(`Error deleting teacher constraint with id ${id}:`, error);
       throw error;
     }
   },
 
   async deleteTeacherConstraintsByTeacherId(teacherId: string): Promise<void> {
-    const { error } = await supabase
-      .from("teacher_constraints")
-      .delete()
-      .eq("teacher_id", teacherId);
-
-    if (error) {
+    try {
+      await pool.query(
+        "DELETE FROM teacher_constraints WHERE teacher_id = $1",
+        [teacherId],
+      );
+    } catch (error) {
       console.error(
         `Error deleting constraints for teacher ${teacherId}:`,
         error,
