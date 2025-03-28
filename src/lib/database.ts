@@ -1,16 +1,22 @@
-import { createClient } from "@supabase/supabase-js";
+import { Pool } from "pg";
 
-// Use Supabase client instead of direct pg connection in browser environment
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Create a PostgreSQL connection pool
+const pool = new Pool({
+  user: process.env.PGUSER || "postgres",
+  password: process.env.PGPASSWORD || "postgres",
+  host: process.env.PGHOST || "localhost",
+  port: parseInt(process.env.PGPORT || "5432"),
+  database: process.env.PGDATABASE || "postgres",
+  ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : false,
+});
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables");
-}
+// Test the connection
+pool.query("SELECT NOW()", (err, res) => {
+  if (err) {
+    console.error("Error connecting to PostgreSQL:", err);
+  } else {
+    console.log("PostgreSQL connected successfully at:", res.rows[0].now);
+  }
+});
 
-const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "");
-
-// Log connection status
-console.log("Supabase client initialized");
-
-export default supabase;
+export default pool;
